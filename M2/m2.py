@@ -24,7 +24,7 @@ X_test = scaler.transform(X_test)
 
 # Set the MLflow tracking server
 mlflow.set_tracking_uri("http://localhost:5000")
-experiment_id = mlflow.create_experiment("v1 Dataset")
+experiment_id = mlflow.create_experiment("v2 Dataset")
 experiment = mlflow.get_experiment(experiment_id)
 
 # Model 1: Decision Tree

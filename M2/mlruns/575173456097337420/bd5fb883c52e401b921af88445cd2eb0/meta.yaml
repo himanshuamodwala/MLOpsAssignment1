@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/575173456097337420/bd5fb883c52e401b921af88445cd2eb0/artifacts
+end_time: 1721844324337
+entry_point_name: ''
+experiment_id: '575173456097337420'
+lifecycle_stage: active
+run_id: bd5fb883c52e401b921af88445cd2eb0
+run_name: Logistic Regression
+run_uuid: bd5fb883c52e401b921af88445cd2eb0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1721844322440
+status: 3
+tags: []
+user_id: Lenovo
