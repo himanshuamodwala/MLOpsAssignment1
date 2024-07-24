@@ -24,9 +24,11 @@ X_test = scaler.transform(X_test)
 
 # Set the MLflow tracking server
 mlflow.set_tracking_uri("http://localhost:5000")
+experiment_id = mlflow.create_experiment("v1 Dataset")
+experiment = mlflow.get_experiment(experiment_id)
 
 # Model 1: Decision Tree
-with mlflow.start_run(run_name="Decision Tree"):
+with mlflow.start_run(run_name="Decision Tree", experiment_id=experiment.experiment_id):
     mlflow.log_param("model_type", "Decision Tree")
     model = DecisionTreeClassifier(random_state=42)
     mlflow.log_param("random_state", "42")
@@ -49,7 +51,7 @@ with mlflow.start_run(run_name="Decision Tree"):
     mlflow.sklearn.log_model(model, "DecisionTree")
 
 # Model 2: Logistic Rgression
-with mlflow.start_run(run_name="Logistic Regression"):
+with mlflow.start_run(run_name="Logistic Regression", experiment_id=experiment.experiment_id):
     mlflow.log_param("model_type", "Logistic Regression")
     model = LogisticRegression(random_state=42)
     mlflow.log_param("random_state", "42")
@@ -72,7 +74,7 @@ with mlflow.start_run(run_name="Logistic Regression"):
     mlflow.sklearn.log_model(model, "LogisticRegression")
 
 # Model 3: Support Vector Machine
-with mlflow.start_run(run_name="Support Vector Machine"):
+with mlflow.start_run(run_name="Support Vector Machine", experiment_id=experiment.experiment_id):
     mlflow.log_param("model_type", "Support Vector Machine")
     model = SVC(random_state=42)
     mlflow.log_param("random_state", "42")
