@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/262919b6695c4e11a871064089ab03ce/artifacts
+end_time: 1721843209293
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 262919b6695c4e11a871064089ab03ce
+run_name: Decision Tree
+run_uuid: 262919b6695c4e11a871064089ab03ce
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1721843204684
+status: 3
+tags: []
+user_id: Lenovo
