@@ -1,0 +1,5 @@
+$headers = @{"Content-Type" = "application/json"}
+$body = @{"features" = @(8.3252, 37.0, 6.984127, 1.02381, 320.0, 2.555556, 38.88, -122.23)}
+$bodyJson = $body | ConvertTo-Json
+$response = Invoke-WebRequest -Uri "http://127.0.0.1:5000/predict" -Method POST -Headers $headers -Body $bodyJson
+$response.Content
