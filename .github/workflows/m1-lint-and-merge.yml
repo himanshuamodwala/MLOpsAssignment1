@@ -3,10 +3,7 @@ name: Lint and Merge Workflow
 on:
   push:
     branches:
-      - '2022AA05005'
-      - '2022AC05156'
-    paths:
-      - 'M3/m3.py'
+      - '*'
 
 jobs:
   lint:
