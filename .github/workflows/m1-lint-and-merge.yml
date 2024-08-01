@@ -52,7 +52,7 @@ jobs:
             const fs = require('fs');
             const { owner, repo } = context.repo;
             const lintOutput = fs.readFileSync('lint-output.txt', 'utf8');
-            github.issues.create({
+            await github.rest.issues.create({
               owner: owner,
               repo: repo,
               title: 'Linting failed on M3/m3.py',
