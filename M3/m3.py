@@ -27,8 +27,7 @@ def objective(trial):
     min_samples_split = trial.suggest_int('min_samples_split', 2, 14)
     model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, min_samples_split=min_samples_split)
     score = cross_val_score(model, X_train, y_train, n_jobs=-1, cv=3, scoring='neg_mean_squared_error').mean()
-    return score
-
+    return scorea
 # Create an Optuna study
 study = optuna.create_study(direction='minimize', storage='sqlite:///optuna_study.db', study_name='rf', load_if_exists=True)
 # Optimize the study
@@ -36,10 +35,10 @@ study.optimize(objective, n_trials=100)
 
 # Print the best parameters
 print("Best parameters: ", study.best_params)
-
 # Train the best model on the entire training dataset
 best_model = RandomForestRegressor(**study.best_params)
 best_model.fit(X_train, y_train)
+
 
 # Save the Scaler and Model to a file
 joblib.dump(scaler, 'scaler.pkl')
