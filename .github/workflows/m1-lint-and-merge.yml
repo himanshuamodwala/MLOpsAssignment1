@@ -30,15 +30,21 @@ jobs:
           pip install flake8
 
       - name: Lint M3/m3.py
-        id: lint
         run: |
           flake8 M3/m3.py | tee lint-output.txt
           cat lint-output.txt
-          echo "Lint outcome: ${{ steps.lint.outcome }}"
-        continue-on-error: true
+
+      - name: Check Lint Output
+        id: check_lint
+        run: |
+          if [ -s lint-output.txt ]; then
+            echo "lint_issues=true" >> $GITHUB_ENV
+          else
+            echo "lint_issues=false" >> $GITHUB_ENV
+          fi
 
       - name: Create issue if lint fails
-        if: steps.lint.outcome == 'failure'
+        if: env.lint_issues == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -51,3 +57,8 @@ jobs:
               title: 'Linting failed on M3/m3.py',
               body: `Linting failed for M3/m3.py in push to branch ${{ github.ref_name }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
             });
+
+      - name: Approve and Push
+        if: env.lint_issues == 'false'
+        run: |
+          echo "Linting passed. Changes can be safely pushed."
