@@ -63,11 +63,15 @@ jobs:
               body: `Linting failed for M3/m3.py in push to branch ${{ github.ref_name }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
             });
 
+      - name: Fail Action if Lint Issues Exist
+        if: env.lint_issues == 'true'
+        run: |
+          echo "Failing the job due to linting errors."
+          exit 1 
+
   validate_unit_test_cases:
     runs-on: ubuntu-latest
     needs: validate_code_linting
-
-    if: needs.validate_code_linting.outputs.lint_issues == 'false'
 
     steps:
       - name: Print Hello World
@@ -77,8 +81,6 @@ jobs:
   build_and_deploy_application:
     runs-on: ubuntu-latest
     needs: validate_unit_test_cases
-
-    if: success()
 
     steps:
       - name: Print Hello World
