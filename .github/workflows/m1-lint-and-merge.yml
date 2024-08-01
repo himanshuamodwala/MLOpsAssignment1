@@ -1,7 +1,7 @@
 name: Lint and Merge Workflow
 
 on:
-  pull_request:
+  push:
     branches:
       - '2022AA05005'
       - '2022AC05156'
