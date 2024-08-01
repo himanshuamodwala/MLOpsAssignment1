@@ -34,6 +34,7 @@ jobs:
         run: |
           flake8 M3/m3.py | tee lint-output.txt
           cat lint-output.txt
+          echo "Lint outcome: ${{ steps.lint.outcome }}"
         continue-on-error: true
 
       - name: Create issue if lint fails
