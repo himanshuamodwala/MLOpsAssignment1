@@ -49,6 +49,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require('fs');
             const { owner, repo } = context.repo;
             const lintOutput = fs.readFileSync('lint-output.txt', 'utf8');
             github.issues.create({
