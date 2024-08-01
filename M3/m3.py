@@ -46,4 +46,3 @@ joblib.dump(scaler, 'scaler.pkl')
 joblib.dump(best_model, 'best_model.pkl')
 
 # TEST
-import sys
