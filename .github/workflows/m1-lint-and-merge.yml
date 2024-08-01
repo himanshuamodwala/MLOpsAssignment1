@@ -19,16 +19,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Print branch and paths
-        run: |
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Files changed:"
-          git diff-tree --no-commit-id --name-only -r ${{ github.sha }}
-
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: 3.8
+          python-version: 3.11
 
       - name: Install flake8
         run: |
@@ -36,7 +30,23 @@ jobs:
           pip install flake8
 
       - name: Lint M3/m3.py
+        id: lint
         run: |
           flake8 M3/m3.py | tee lint-output.txt
           cat lint-output.txt
         continue-on-error: true
+
+      - name: Create issue if lint fails
+        if: steps.lint.outcome == 'failure'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const lintOutput = fs.readFileSync('lint-output.txt', 'utf8');
+            github.issues.create({
+              owner: owner,
+              repo: repo,
+              title: 'Linting failed on M3/m3.py',
+              body: `Linting failed for M3/m3.py in push to branch ${{ github.ref_name }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
+            });
