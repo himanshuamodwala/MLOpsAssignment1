@@ -1,4 +1,4 @@
-name: Lint and Merge Workflow
+name: M1 - CI/CD Pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - 'M3/m3.py'
 
 jobs:
-  lint:
+  validate_code_linting:
     runs-on: ubuntu-latest
 
     permissions:
@@ -63,7 +63,24 @@ jobs:
               body: `Linting failed for M3/m3.py in push to branch ${{ github.ref_name }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
             });
 
-      - name: Approve and Push
-        if: env.lint_issues == 'false'
+  validate_unit_test_cases:
+    runs-on: ubuntu-latest
+    needs: validate_code_linting
+
+    if: env.lint_issues == 'false'
+
+    steps:
+      - name: Print Hello World
         run: |
-          echo "Linting passed. Changes can be safely pushed."
+          echo "Hello World from Unit Test Validation!"
+
+  build_and_deploy_application:
+    runs-on: ubuntu-latest
+    needs: validate_unit_test_cases
+
+    if: success()
+
+    steps:
+      - name: Print Hello World
+        run: |
+          echo "Hello World from Build and Deploy!"
