@@ -3,7 +3,7 @@ name: Lint and Merge Workflow
 on:
   push:
     branches:
-      - '2022AA05005'
+      - 'tree/2022AA05005'
 
 jobs:
   lint:
