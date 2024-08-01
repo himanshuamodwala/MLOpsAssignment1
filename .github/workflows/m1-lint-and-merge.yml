@@ -3,13 +3,17 @@ name: Lint and Merge Workflow
 on:
   push:
     branches:
-      - '*'
+      - '2022AA05005'
 
 jobs:
   lint:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Print branch
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+      
       - name: Checkout code
         uses: actions/checkout@v3
 
