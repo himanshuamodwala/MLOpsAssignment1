@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '2022AA05005'
+    paths:
+      - 'M3/m3.py'
 
 jobs:
   lint:
