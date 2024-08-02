@@ -6,6 +6,7 @@ on:
       - 'main'
     paths:
       - 'M3/m3.py'
+      - 'M3/m3_*.py'
 
 jobs:
   validate_code_linting:
