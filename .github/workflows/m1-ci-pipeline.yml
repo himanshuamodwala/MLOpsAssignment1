@@ -198,7 +198,7 @@ jobs:
           print(f"n_estimators: {n_estimators}")
           print(f"max_depth: {max_depth}")
           print(f"min_samples_split: {min_samples_split}")
-          validation_result = "succeeded" if (10 <= n_estimators <= 100) and (2 <= max_depth <= 32) and (2 <= min_samples_split <= 14) else "failed"
+          validation_result = "succeeded" if (10 <= n_estimators <= 100) and (2 <= max_depth <= 32) and (2 <= min_samples_split <= 8) else "failed"
           with open('${{ github.env }}', 'a') as env_file:
             env_file.write(f'VALIDATION_RESULT={validation_result}\\n')
           EOF
@@ -238,7 +238,7 @@ jobs:
             
             ##### Model parameters are outside the expected range.
             ##### The expected range:
-            \`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 14\n\`\`\`
+            \`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\`
             `;
             const issue = await github.rest.issues.createComment({
               owner: owner,
