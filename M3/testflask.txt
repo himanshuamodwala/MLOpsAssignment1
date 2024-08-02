@@ -3,3 +3,9 @@ $body = @{"features" = @(8.3252, 37.0, 6.984127, 1.02381, 320.0, 2.555556, 38.88
 $bodyJson = $body | ConvertTo-Json
 $response = Invoke-WebRequest -Uri "http://127.0.0.1:5000/predict" -Method POST -Headers $headers -Body $bodyJson
 $response.Content
+
+curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d '{"features": [5.5, 20.0, 10.0, 5.0, 500.0, 2.5, 34.0, -120.0]}'
+
+docker build -t mlops-assignment1-m3-app .
+docker run -p 5000:5000 mlops-assignment1-m3-app
+
