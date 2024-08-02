@@ -131,7 +131,7 @@ jobs:
             });
 
       - name: Temporarily save model artifact
-        uses: actions/upload-artifact@temp_artifact
+        uses: actions/upload-artifact@v2
         with:
           name: best_model.pkl
           path: ${{ github.workspace }}
@@ -148,7 +148,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@temp_artifact
+        uses: actions/checkout@v2
 
       - name: Set up python
         uses: actions/setup-python@v3
@@ -163,7 +163,7 @@ jobs:
           ls -ltr ${{ github.workspace }}
 
       - name: Retrieve saved model artifact
-        uses: actions/download-artifact@temp_artifact
+        uses: actions/download-artifact@v2
         with:
           name: best_model.pkl
           path: ${{ github.workspace }}
