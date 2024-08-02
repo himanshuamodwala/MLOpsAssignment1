@@ -131,7 +131,7 @@ jobs:
             });
 
       - name: Temporarily save model artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@temp_artifact
         with:
           name: best_model.pkl
           path: ${{ github.workspace }}
@@ -147,18 +147,9 @@ jobs:
       pull-requests: write
 
     steps:
-      - run: |
-          ls -ltr ${{ github.workspace }}
+      - name: Checkout code
+        uses: actions/checkout@temp_artifact
 
-      - name: Retrieve saved model artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: best_model.pkl
-          path: ${{ github.workspace }}
-
-      - run: |
-          ls -ltr ${{ github.workspace }}
-      
       - name: Set up python
         uses: actions/setup-python@v3
         with:
@@ -167,6 +158,18 @@ jobs:
       - name: Install dependencies
         run: |
           pip install joblib scikit-learn
+        
+      - run: |
+          ls -ltr ${{ github.workspace }}
+
+      - name: Retrieve saved model artifact
+        uses: actions/download-artifact@temp_artifact
+        with:
+          name: best_model.pkl
+          path: ${{ github.workspace }}
+
+      - run: |
+          ls -ltr ${{ github.workspace }}
 
       - name: Display model location
         run: |
