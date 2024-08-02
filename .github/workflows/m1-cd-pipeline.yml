@@ -45,6 +45,12 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+      
       - name: Retrieve saved model artifact
         uses: actions/download-artifact@v3
         with:
@@ -81,4 +87,4 @@ jobs:
           git config user.email "dibyajyoti.sarkar.93@gmail.com"
           git add M3/deployment/M3_Dockerfile_$TIMESTAMP
           git commit -m "Deploy Docker image with timestamp"
-          git push origin main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
