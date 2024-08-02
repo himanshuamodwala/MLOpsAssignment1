@@ -130,9 +130,12 @@ jobs:
               body: body
             });
 
-      - name: Dummy
-        run: |
-          ls -ltr ${{ github.workspace }}
+      - name: Temporarily save model artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: best_model.pkl
+          path: ${{ github.workspace }}
+          retention-days: 1
   
   validate_unit_test_cases:
     runs-on: ubuntu-latest
@@ -144,6 +147,18 @@ jobs:
       pull-requests: write
 
     steps:
+      - run: |
+          ls -ltr ${{ github.workspace }}
+
+      - name: Retrieve saved model artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: best_model.pkl
+          path: ${{ github.workspace }}
+
+      - run: |
+          ls -ltr ${{ github.workspace }}
+      
       - name: Set up python
         uses: actions/setup-python@v3
         with:
