@@ -1,9 +1,9 @@
 name: M1 - CI/CD Pipeline
 
 on:
-  push:
+  pull_request:
     branches:
-      - '2022AA05005'
+      - 'main'
     paths:
       - 'M3/m3.py'
 
@@ -14,12 +14,9 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
 
     steps:
-      - name: Print branch
-        run: |
-          echo "Branch: ${{ github.ref_name }}"
-      
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -50,17 +47,35 @@ jobs:
       - name: Create issue if lint fails
         if: env.lint_issues == 'true'
         uses: actions/github-script@v6
+        id: create_issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const { owner, repo } = context.repo;
             const lintOutput = fs.readFileSync('lint-output.txt', 'utf8');
-            await github.rest.issues.create({
+            const issue = await github.rest.issues.create({
               owner: owner,
               repo: repo,
               title: 'Linting failed on M3/m3.py',
-              body: `Linting failed for M3/m3.py in push to branch ${{ github.ref_name }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
+              body: `Linting failed for M3/m3.py in pull request #${{ github.event.pull_request.number }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
+            });
+            return { issue_number: issue.data.number };
+
+      - name: Reference Issue in Pull Request
+        if: env.lint_issues == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const issueNumber = ${{ steps.create_issue.outputs.issue_number }};
+            const pullNumber = ${{ github.event.pull_request.number }};
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: `Linting issues found. See related issue #${issueNumber} for details.`
             });
 
       - name: Fail Action if Lint Issues Exist
