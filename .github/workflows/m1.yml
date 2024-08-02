@@ -133,7 +133,7 @@ jobs:
       - name: Temporarily save model artifact
         uses: actions/upload-artifact@v3
         with:
-          name: best_model.pkl
+          name: best_model_artifact
           path: ${{ github.workspace }}
           retention-days: 1
   
@@ -156,21 +156,11 @@ jobs:
         run: |
           pip install joblib scikit-learn
         
-      - run: |
-          ls -ltr ${{ github.workspace }}
-
       - name: Retrieve saved model artifact
         uses: actions/download-artifact@v3
         with:
-          name: best_model.pkl
+          name: best_model_artifact
           path: ${{ github.workspace }}
-
-      - run: |
-          ls -ltr ${{ github.workspace }}
-
-      - name: Display model location
-        run: |
-          echo "Model saved at: ${{ github.workspace }}/best_model.pkl"
 
       - name: Load and validate model
         run: |
