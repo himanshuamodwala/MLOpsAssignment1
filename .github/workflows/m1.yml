@@ -129,6 +129,10 @@ jobs:
               issue_number: pullNumber,
               body: body
             });
+
+      - name: Dummy
+        run: |
+          ls -ltr ${{ github.workspace }}
   
   validate_unit_test_cases:
     runs-on: ubuntu-latest
