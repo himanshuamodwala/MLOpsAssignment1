@@ -18,7 +18,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Set up python
         uses: actions/setup-python@v3
         with:
           python-version: 3.11
@@ -33,7 +33,7 @@ jobs:
           flake8 M3/m3_copy.py | tee lint-output.txt
           cat lint-output.txt
 
-      - name: Check Lint Output
+      - name: Check lint output
         id: check_lint
         run: |
           if [ -s lint-output.txt ]; then
@@ -60,12 +60,56 @@ jobs:
             });
             return { issue_number: issue.data.number };
 
-      - name: Fail Action if Lint Issues Exist
+      - name: Fail action if lint issues exist
         if: env.lint_issues == 'true'
         run: |
           echo "Failing the job due to linting errors."
           exit 1 
 
+  build_model:
+    runs-on: ubuntu-latest
+    needs: validate_code_linting
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn optuna joblib
+
+      - name: Run model training script
+        id: run_model
+        run: |
+          python M3/m3_copy.py
+
+      - name: Validate Model and Hyperparameters
+        id: validate_model
+        run: |
+          python -c "
+import joblib
+
+# Load the model and evaluate its performance
+model = joblib.load('best_model.pkl')
+scaler = joblib.load('scaler.pkl')
+
+# Check if the hyperparameters are within the expected range
+best_params = model.get_params()
+if not (10 <= best_params['n_estimators'] <= 100 and 2 <= best_params['max_depth'] <= 32 and 2 <= best_params['min_samples_split'] <= 14):
+    raise ValueError('Best parameters are out of the expected range')
+
+# Print the best parameters
+print(f'::set-output name=n_estimators::{best_params["n_estimators"]}')
+print(f'::set-output name=max_depth::{best_params["max_depth"]}')
+print(f'::set-output name=min_samples_split::{best_params["min_samples_split"]}')
+"
+  
   validate_unit_test_cases:
     runs-on: ubuntu-latest
     needs: validate_code_linting
