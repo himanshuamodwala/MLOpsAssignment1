@@ -1,9 +1,11 @@
-name: M1 - CI/CD Pipeline
+name: CI Pipeline
 
 on:
   pull_request:
     branches:
       - 'main'
+    paths:
+      - 'M3/m3.py'
 
 jobs:
   validate_code_linting:
