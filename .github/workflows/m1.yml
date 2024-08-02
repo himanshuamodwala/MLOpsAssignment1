@@ -64,7 +64,28 @@ jobs:
         if: env.lint_issues == 'true'
         run: |
           echo "Failing the job due to linting errors."
-          exit 1 
+          exit 1
+
+      - name: Comment no linting errors
+        if: env.lint_issues == 'false'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const body = `
+            ### Linting Passed!
+
+            
+            ##### No linting errors were found in M3/m3.py.
+            `;
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            });
 
   build_model:
     runs-on: ubuntu-latest
@@ -163,6 +184,7 @@ jobs:
           path: ${{ github.workspace }}
 
       - name: Load and validate model
+        id: validate_model
         run: |
           python - <<EOF
           import joblib
@@ -173,4 +195,58 @@ jobs:
           print(f"n_estimators: {n_estimators}")
           print(f"max_depth: {max_depth}")
           print(f"min_samples_split: {min_samples_split}")
+          validation_result = "succeeded" if (10 <= n_estimators <= 100) and (2 <= max_depth <= 32) and (2 <= min_samples_split <= 14) else "failed"
+          with open('${{ github.env }}', 'a') as env_file:
+            env_file.write(f'VALIDATION_RESULT={validation_result}\\n')
           EOF
+
+      - name: Comment on unit testing success
+        if: env.VALIDATION_RESULT == 'succeeded'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const body = `
+            ### Unit Testing Succeeded!
+
+            
+            ##### Model parameters are within the expected range.
+            `;
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            })
+
+      - name: Log issue if validation fails
+        if: env.VALIDATION_RESULT == 'failed'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const body = `
+            ### Unit Testing Failed!
+
+            
+            ##### Model parameters are outside the expected range.
+            ##### The expected range:
+            \`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 14\n\`\`\`
+            `;
+            const issue = await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            });
+            return { issue_number: issue.data.number };
+
+      - name: Fail action if validation fails
+        if: env.VALIDATION_RESULT == 'failed'
+        run: |
+          echo "Failing the job due to unit testing failures."
+          exit 1
