@@ -1,4 +1,3 @@
-import sys
 import optuna
 import joblib
 from sklearn.datasets import fetch_california_housing
