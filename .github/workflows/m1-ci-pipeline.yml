@@ -224,30 +224,22 @@ jobs:
               body: body
             })
 
-      - name: Log issue if validation fails
-        if: env.VALIDATION_RESULT == 'failed'
+      - name: Create issue if validation fails
+        if: env.lint_issues == 'true'
         uses: actions/github-script@v6
+        id: create_issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-            const pullNumber = context.issue.number;
-            const body = `
-            ### Unit Testing Failed!
-
-            
-            ##### Model parameters are outside the expected range.
-            ##### The expected range:
-            \`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\`
-            `;
-            const issue = await github.rest.issues.createComment({
+            const issue = await github.rest.issues.create({
               owner: owner,
               repo: repo,
-              issue_number: pullNumber,
-              body: body
+              title: 'Unit testing failed for M3/m3.py',
+              body: `Unit Testing Failed: Model parameters are outside the expected range.\n\nThe expected range:\n\`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\``
             });
             return { issue_number: issue.data.number };
-
+      
       - name: Fail action if validation fails
         if: env.VALIDATION_RESULT == 'failed'
         run: |
