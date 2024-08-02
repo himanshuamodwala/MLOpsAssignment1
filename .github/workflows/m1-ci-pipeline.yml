@@ -225,7 +225,7 @@ jobs:
             })
 
       - name: Create issue if validation fails
-        if: env.lint_issues == 'true'
+        if: env.VALIDATION_RESULT == 'failed'
         uses: actions/github-script@v6
         id: create_issue
         with:
@@ -239,7 +239,7 @@ jobs:
               body: `Unit Testing Failed: Model parameters are outside the expected range.\n\nThe expected range:\n\`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\``
             });
             return { issue_number: issue.data.number };
-      
+
       - name: Fail action if validation fails
         if: env.VALIDATION_RESULT == 'failed'
         run: |
