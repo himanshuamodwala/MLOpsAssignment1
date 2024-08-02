@@ -87,22 +87,51 @@ jobs:
       - name: Run model training script
         id: run_model
         run: |
-          python M3/m3_copy.py
+          python M3/m3_copy.py | tee m3_output.log
+
+      - name: Extract best hyperparameters
+        id: extract_params
+        run: |
+          n_estimators=$(grep "Best parameters" m3_output.log | sed 's/.*n_estimators.: \([0-9]*\),.*/\1/')
+          max_depth=$(grep "Best parameters" m3_output.log | sed 's/.*max_depth.: \([0-9]*\),.*/\1/')
+          min_samples_split=$(grep "Best parameters" m3_output.log | sed 's/.*min_samples_split.: \([0-9]*\)}.*/\1/')
+          echo "n_estimators=${n_estimators}" >> $GITHUB_ENV
+          echo "max_depth=${max_depth}" >> $GITHUB_ENV
+          echo "min_samples_split=${min_samples_split}" >> $GITHUB_ENV
+
+      - name: Comment best hyperparameters on PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const n_estimators = process.env.n_estimators;
+            const max_depth = process.env.max_depth;
+            const min_samples_split = process.env.min_samples_split;
+            const body = `
+            ### Best Hyperparameters
+            - **n_estimators**: ${n_estimators}
+            - **max_depth**: ${max_depth}
+            - **min_samples_split**: ${min_samples_split}
+            `;
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            });
   
   validate_unit_test_cases:
     runs-on: ubuntu-latest
-    needs: validate_code_linting
+    needs: build_model
 
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+      
       - name: Print Hello World
         run: |
           echo "Hello World from Unit Test Validation!"
-
-  build_and_deploy_application:
-    runs-on: ubuntu-latest
-    needs: validate_unit_test_cases
-
-    steps:
-      - name: Print Hello World
-        run: |
-          echo "Hello World from Build and Deploy!"
