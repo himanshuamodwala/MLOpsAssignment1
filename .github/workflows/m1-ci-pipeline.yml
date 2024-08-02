@@ -236,7 +236,7 @@ jobs:
               owner: owner,
               repo: repo,
               title: 'Unit testing failed for M3/m3.py',
-              body: `Unit Testing Failed: Model parameters are outside the expected range.\n\nThe expected range:\n\`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\``
+              body: `Unit Testing Failed in pull request #${{ github.event.pull_request.number }}: Model parameters are outside the expected range.\n\nThe expected range:\n\`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\``
             });
             return { issue_number: issue.data.number };
 
