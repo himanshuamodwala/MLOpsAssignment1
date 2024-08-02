@@ -4,8 +4,6 @@ on:
   pull_request:
     branches:
       - 'main'
-    paths:
-      - 'M3/m3.py'
 
 jobs:
   validate_code_linting:
