@@ -140,7 +140,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Set up Python
+      - name: Set up python
         uses: actions/setup-python@v3
         with:
           python-version: 3.11
@@ -149,15 +149,15 @@ jobs:
         run: |
           pip install joblib scikit-learn
 
-      - name: Display Model Location
+      - name: Display model location
         run: |
           echo "Model saved at: ${{ github.workspace }}/best_model.pkl"
 
-      - name: Load and Validate Model
+      - name: Load and validate model
         run: |
           python - <<EOF
           import joblib
-          model = joblib.load('best_model.pkl')
+          model = joblib.load('${{ github.workspace }}/best_model.pkl')
           n_estimators = model.n_estimators
           max_depth = model.max_depth
           min_samples_split = model.min_samples_split
