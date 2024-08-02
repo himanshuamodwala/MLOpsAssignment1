@@ -55,26 +55,10 @@ jobs:
             const issue = await github.rest.issues.create({
               owner: owner,
               repo: repo,
-              title: 'Linting failed on M3/m3.py',
+              title: 'Linting failed for M3/m3.py in pull request #${{ github.event.pull_request.number }}',
               body: `Linting failed for M3/m3.py in pull request #${{ github.event.pull_request.number }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
             });
             return { issue_number: issue.data.number };
-
-      - name: Reference Issue in Pull Request
-        if: env.lint_issues == 'true'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { owner, repo } = context.repo;
-            const issueNumber = ${{ steps.create_issue.outputs.issue_number }};
-            const pullNumber = ${{ github.event.pull_request.number }};
-            await github.rest.issues.createComment({
-              owner: owner,
-              repo: repo,
-              issue_number: pullNumber,
-              body: `Linting issues found. See related issue #${issueNumber} for details.`
-            });
 
       - name: Fail Action if Lint Issues Exist
         if: env.lint_issues == 'true'
