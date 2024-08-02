@@ -71,6 +71,8 @@ jobs:
           docker build -t m3-local-model:latest .
 
       - name: Deploy Docker image locally
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p M3/deployment
           TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
