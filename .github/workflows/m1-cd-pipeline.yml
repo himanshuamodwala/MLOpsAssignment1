@@ -79,7 +79,7 @@ jobs:
 
       - name: Push docker image to GitHub container registry
         run: |
-          docker push ghcr.io/${{ github.repository }}/my-model:latest
+          docker push ghcr.io/${{ github.repository_owner }}/mlopsassignment1/my-model:latest
 
       - name: Deploy docker image
         run: |
