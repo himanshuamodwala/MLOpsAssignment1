@@ -55,7 +55,7 @@ jobs:
             const issue = await github.rest.issues.create({
               owner: owner,
               repo: repo,
-              title: 'Linting failed for M3/m3.py in pull request #${{ github.event.pull_request.number }}',
+              title: 'Linting issues found in M3/m3.py',
               body: `Linting failed for M3/m3.py in pull request #${{ github.event.pull_request.number }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
             });
             return { issue_number: issue.data.number };
