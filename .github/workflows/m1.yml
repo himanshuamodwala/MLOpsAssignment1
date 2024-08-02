@@ -134,12 +134,34 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_model
 
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
     steps:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: 3.11
       
-      - name: Print Hello World
+      - name: Install dependencies
         run: |
-          echo "Hello World from Unit Test Validation!"
+          pip install joblib scikit-learn
+
+      - name: Display Model Location
+        run: |
+          echo "Model saved at: ${{ github.workspace }}/best_model.pkl"
+
+      - name: Load and Validate Model
+        run: |
+          python - <<EOF
+          import joblib
+          model = joblib.load('best_model.pkl')
+          n_estimators = model.n_estimators
+          max_depth = model.max_depth
+          min_samples_split = model.min_samples_split
+          print(f"n_estimators: {n_estimators}")
+          print(f"max_depth: {max_depth}")
+          print(f"min_samples_split: {min_samples_split}")
+          EOF
