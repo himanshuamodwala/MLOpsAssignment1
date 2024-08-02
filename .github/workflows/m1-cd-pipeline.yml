@@ -54,6 +54,12 @@ jobs:
       - name: Set up docker buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Build docker image
         run: |
           echo "
@@ -70,15 +76,10 @@ jobs:
           " > Dockerfile
           docker build -t m3-local-model:latest .
 
-      - name: Deploy Docker image locally
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag and push Docker image
         run: |
-          mkdir -p M3/deployment
           TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-          echo "FROM m3-local-model:latest" > M3/deployment/M3_Dockerfile_$TIMESTAMP
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add M3/deployment/M3_Dockerfile_$TIMESTAMP
-          git commit -m "Deploy Docker image with timestamp"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
+          docker tag m3-local-model:latest ${{ secrets.DOCKER_USERNAME }}/m3-local-model:$TIMESTAMP
+          docker tag m3-local-model:latest ${{ secrets.DOCKER_USERNAME }}/m3-local-model:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/m3-local-model:$TIMESTAMP
+          docker push ${{ secrets.DOCKER_USERNAME }}/m3-local-model:latest
