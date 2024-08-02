@@ -32,7 +32,7 @@ def objective(trial):
 # Create an Optuna study
 study = optuna.create_study(direction='minimize', storage='sqlite:///optuna_study.db', study_name='rf', load_if_exists=True)
 # Optimize the study
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=3)
 
 # Print the best parameters
 print("Best parameters: ", study.best_params)
