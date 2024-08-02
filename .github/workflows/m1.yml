@@ -30,7 +30,7 @@ jobs:
 
       - name: Lint M3/m3.py
         run: |
-          flake8 M3/m3.py | tee lint-output.txt
+          flake8 M3/m3_copy.py | tee lint-output.txt
           cat lint-output.txt
 
       - name: Check Lint Output
