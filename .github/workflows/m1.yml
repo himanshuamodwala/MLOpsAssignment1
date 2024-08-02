@@ -70,6 +70,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate_code_linting
 
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -92,7 +97,6 @@ jobs:
       - name: Extract best hyperparameters
         id: extract_params
         run: |
-          cat "m3_output.log"
           n_estimators=$(grep "Best parameters" m3_output.log | sed 's/.*n_estimators.: \([0-9]*\),.*/\1/')
           max_depth=$(grep "Best parameters" m3_output.log | sed 's/.*max_depth.: \([0-9]*\),.*/\1/')
           min_samples_split=$(grep "Best parameters" m3_output.log | sed 's/.*min_samples_split.: \([0-9]*\)}.*/\1/')
