@@ -46,7 +46,7 @@ study = optuna.create_study(
 )
 
 # Optimize the study
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=2)
 
 # Print the best parameters
 print("Best parameters: ", study.best_params)
