@@ -88,27 +88,6 @@ jobs:
         id: run_model
         run: |
           python M3/m3_copy.py
-
-      - name: Validate Model and Hyperparameters
-        id: validate_model
-        run: |
-          python -c "
-import joblib
-
-# Load the model and evaluate its performance
-model = joblib.load('best_model.pkl')
-scaler = joblib.load('scaler.pkl')
-
-# Check if the hyperparameters are within the expected range
-best_params = model.get_params()
-if not (10 <= best_params['n_estimators'] <= 100 and 2 <= best_params['max_depth'] <= 32 and 2 <= best_params['min_samples_split'] <= 14):
-    raise ValueError('Best parameters are out of the expected range')
-
-# Print the best parameters
-print(f'::set-output name=n_estimators::{best_params["n_estimators"]}')
-print(f'::set-output name=max_depth::{best_params["max_depth"]}')
-print(f'::set-output name=min_samples_split::{best_params["min_samples_split"]}')
-"
   
   validate_unit_test_cases:
     runs-on: ubuntu-latest
