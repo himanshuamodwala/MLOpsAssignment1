@@ -115,7 +115,10 @@ jobs:
             const max_depth = process.env.max_depth;
             const min_samples_split = process.env.min_samples_split;
             const body = `
-            ### Best Hyperparameters
+            ### Model Build Succeeded!
+            
+            
+            ##### Best Hyperparameters:
             - **n_estimators**: ${n_estimators}
             - **max_depth**: ${max_depth}
             - **min_samples_split**: ${min_samples_split}
