@@ -75,7 +75,7 @@ jobs:
           ENV NAME World
           CMD [\"python\", \"m3_flask.py\"]
           " > Dockerfile
-          docker build -t ghcr.io/${{ github.repository }}/my-model:latest .
+          docker build -t ghcr.io/${{ github.repository_owner }}/mlopsassignment1/my-model:latest .
 
       - name: Push docker image to GitHub container registry
         run: |
@@ -85,7 +85,7 @@ jobs:
         run: |
           mkdir -p M3/deployment
           TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-          echo "FROM ghcr.io/${{ github.repository }}/my-model:latest" > M3/deployment/Dockerfile_$TIMESTAMP
+          echo "FROM ghcr.io/${{ github.repository_owner }}/mlopsassignment1/my-model:latest" > M3/deployment/Dockerfile_$TIMESTAMP
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add M3/deployment/Dockerfile_$TIMESTAMP
