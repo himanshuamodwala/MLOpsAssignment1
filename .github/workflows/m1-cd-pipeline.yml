@@ -39,7 +39,7 @@ jobs:
           pip install scikit-learn optuna joblib
       - name: Run model training script
         run: |
-          python M3/m3_copy.py
+          python M3/m3.py
       - name: Temporarily save model artifact
         uses: actions/upload-artifact@v3
         with:
