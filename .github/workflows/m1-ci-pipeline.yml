@@ -7,7 +7,6 @@ on:
       - 'main'
     paths:
       - 'M3/m3.py'
-      - 'M3/m3_*.py'
 
 
 jobs:
@@ -30,7 +29,7 @@ jobs:
           pip install flake8
       - name: Lint M3/m3.py
         run: |
-          flake8 M3/m3_copy.py | tee lint-output.txt
+          flake8 M3/m3.py | tee lint-output.txt
           cat lint-output.txt
       - name: Check lint output
         id: check_lint
@@ -105,7 +104,7 @@ jobs:
       - name: Run model training script
         id: run_model
         run: |
-          python M3/m3_copy.py | tee m3_output.log
+          python M3/m3.py | tee m3_output.log
       - name: Extract best hyperparameters
         id: extract_params
         run: |
