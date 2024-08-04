@@ -1,0 +1,225 @@
+name: CI Pipeline
+
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - 'M3/m3.py'
+
+
+jobs:
+  validate_code_linting:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+      - name: Lint M3/m3.py
+        run: |
+          flake8 M3/m3.py | tee lint-output.txt
+          cat lint-output.txt
+      - name: Check lint output
+        id: check_lint
+        run: |
+          if [ -s lint-output.txt ]; then
+            echo "lint_issues=true" >> $GITHUB_ENV
+          else
+            echo "lint_issues=false" >> $GITHUB_ENV
+          fi
+      - name: Create issue if lint fails
+        if: env.lint_issues == 'true'
+        uses: actions/github-script@v6
+        id: create_issue
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const lintOutput = fs.readFileSync('lint-output.txt', 'utf8');
+            const issue = await github.rest.issues.create({
+              owner: owner,
+              repo: repo,
+              title: 'Linting issues found in M3/m3.py',
+              body: `Linting failed for M3/m3.py in pull request #${{ github.event.pull_request.number }}.\n\nDetails:\n\`\`\`\n${lintOutput}\n\`\`\``
+            });
+            return { issue_number: issue.data.number };
+      - name: Fail action if lint issues exist
+        if: env.lint_issues == 'true'
+        run: |
+          echo "Failing the job due to linting errors."
+          exit 1
+      - name: Comment no linting errors
+        if: env.lint_issues == 'false'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const body = `
+            ### Linting Passed!
+
+            
+            ##### No linting errors were found in M3/m3.py.
+            `;
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            });
+
+  
+  build_model:
+    runs-on: ubuntu-latest
+    needs: validate_code_linting
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn optuna joblib
+      - name: Run model training script
+        id: run_model
+        run: |
+          python M3/m3.py | tee m3_output.log
+      - name: Extract best hyperparameters
+        id: extract_params
+        run: |
+          n_estimators=$(grep "Best parameters" m3_output.log | sed 's/.*n_estimators.: \([0-9]*\),.*/\1/')
+          max_depth=$(grep "Best parameters" m3_output.log | sed 's/.*max_depth.: \([0-9]*\),.*/\1/')
+          min_samples_split=$(grep "Best parameters" m3_output.log | sed 's/.*min_samples_split.: \([0-9]*\)}.*/\1/')
+          echo "n_estimators=${n_estimators}" >> $GITHUB_ENV
+          echo "max_depth=${max_depth}" >> $GITHUB_ENV
+          echo "min_samples_split=${min_samples_split}" >> $GITHUB_ENV
+      - name: Comment best hyperparameters on PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const n_estimators = process.env.n_estimators;
+            const max_depth = process.env.max_depth;
+            const min_samples_split = process.env.min_samples_split;
+            const body = `
+            ### Model Build Succeeded!
+            
+            
+            ##### Best Hyperparameters:
+            - **n_estimators**: ${n_estimators}
+            - **max_depth**: ${max_depth}
+            - **min_samples_split**: ${min_samples_split}
+            `;
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            });
+      - name: Temporarily save model artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: best_model_artifact
+          path: ${{ github.workspace }}
+          retention-days: 1
+
+  
+  validate_unit_test_cases:
+    runs-on: ubuntu-latest
+    needs: build_model
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11 
+      - name: Install dependencies
+        run: |
+          pip install joblib scikit-learn
+      - name: Retrieve saved model artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: best_model_artifact
+          path: ${{ github.workspace }}
+      - name: Load and validate model
+        id: validate_model
+        run: |
+          python - <<EOF
+          import joblib
+          model = joblib.load('${{ github.workspace }}/best_model.pkl')
+          n_estimators = model.n_estimators
+          max_depth = model.max_depth
+          min_samples_split = model.min_samples_split
+          print(f"n_estimators: {n_estimators}")
+          print(f"max_depth: {max_depth}")
+          print(f"min_samples_split: {min_samples_split}")
+          validation_result = "succeeded" if (10 <= n_estimators <= 100) and (2 <= max_depth <= 32) and (2 <= min_samples_split <= 8) else "failed"
+          with open('${{ github.env }}', 'a') as env_file:
+            env_file.write(f'VALIDATION_RESULT={validation_result}\\n')
+          EOF
+      - name: Comment on unit testing success
+        if: env.VALIDATION_RESULT == 'succeeded'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.issue.number;
+            const body = `
+            ### Unit Testing Succeeded!
+
+            
+            ##### Model parameters are within the expected range.
+            `;
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: pullNumber,
+              body: body
+            })
+      - name: Create issue if validation fails
+        if: env.VALIDATION_RESULT == 'failed'
+        uses: actions/github-script@v6
+        id: create_issue
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const issue = await github.rest.issues.create({
+              owner: owner,
+              repo: repo,
+              title: 'Unit testing failed for M3/m3.py',
+              body: `Unit Testing Failed in pull request #${{ github.event.pull_request.number }}: Model parameters are outside the expected range.\n\nThe expected range:\n\`\`\`\n10 <= n_estimators <= 100\n2 <= max_depth <= 32\n2 <= min_samples_split <= 8\n\`\`\``
+            });
+            return { issue_number: issue.data.number };
+      - name: Fail action if validation fails
+        if: env.VALIDATION_RESULT == 'failed'
+        run: |
+          echo "Failing the job due to unit testing failures."
+          exit 1
